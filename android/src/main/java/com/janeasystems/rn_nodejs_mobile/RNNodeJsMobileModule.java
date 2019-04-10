@@ -10,6 +10,7 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableType;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.LifecycleEventListener;
+import com.facebook.react.module.annotations.ReactModule;
 import javax.annotation.Nullable;
 import android.util.Log;
 
@@ -25,6 +26,7 @@ import java.io.*;
 import java.util.*;
 import java.util.concurrent.Semaphore;
 
+@ReactModule(name = "RNNodeJsMobile")
 public class RNNodeJsMobileModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
 
   private final ReactApplicationContext reactContext;
@@ -122,14 +124,10 @@ public class RNNodeJsMobileModule extends ReactContextBaseJavaModule implements 
   }
 
   // Extracts the option to redirect stdout and stderr to logcat
-  private boolean extractRedirectOutputToLogcatOption(ReadableMap options)
-  {
+  private boolean extractRedirectOutputToLogcatOption(ReadableMap options) {
     final String OPTION_NAME = "redirectOutputToLogcat";
-    if( (options != null) &&
-        options.hasKey(OPTION_NAME) &&
-        !options.isNull(OPTION_NAME) &&
-        (options.getType(OPTION_NAME) == ReadableType.Boolean)
-      ) {
+    if ((options != null) && options.hasKey(OPTION_NAME) && !options.isNull(OPTION_NAME)
+        && (options.getType(OPTION_NAME) == ReadableType.Boolean)) {
       return options.getBoolean(OPTION_NAME);
     } else {
       // By default, we redirect the process' stdout and stderr to show in logcat
@@ -141,7 +139,7 @@ public class RNNodeJsMobileModule extends ReactContextBaseJavaModule implements 
   public void startNodeWithScript(String script, ReadableMap options) throws Exception {
     // A New module instance may have been created due to hot reload.
     _instance = this;
-    if(!_startedNodeAlready) {
+    if (!_startedNodeAlready) {
       _startedNodeAlready = true;
 
       final boolean redirectOutputToLogcat = extractRedirectOutputToLogcatOption(options);
@@ -151,13 +149,8 @@ public class RNNodeJsMobileModule extends ReactContextBaseJavaModule implements 
         @Override
         public void run() {
           waitForInit();
-          startNodeWithArguments(new String[]{"node",
-            "-e",
-            scriptToRun
-            },
-            nodeJsProjectPath + ":" + builtinModulesPath,
-            redirectOutputToLogcat
-          );
+          startNodeWithArguments(new String[] { "node", "-e", scriptToRun },
+              nodeJsProjectPath + ":" + builtinModulesPath, redirectOutputToLogcat);
         }
       }).start();
     }
@@ -167,7 +160,7 @@ public class RNNodeJsMobileModule extends ReactContextBaseJavaModule implements 
   public void startNodeProject(final String mainFileName, ReadableMap options) throws Exception {
     // A New module instance may have been created due to hot reload.
     _instance = this;
-    if(!_startedNodeAlready) {
+    if (!_startedNodeAlready) {
       _startedNodeAlready = true;
 
       final boolean redirectOutputToLogcat = extractRedirectOutputToLogcatOption(options);
@@ -176,12 +169,8 @@ public class RNNodeJsMobileModule extends ReactContextBaseJavaModule implements 
         @Override
         public void run() {
           waitForInit();
-          startNodeWithArguments(new String[]{"node",
-            nodeJsProjectPath + "/" + mainFileName
-            },
-            nodeJsProjectPath + ":" + builtinModulesPath,
-            redirectOutputToLogcat
-          );
+          startNodeWithArguments(new String[] { "node", nodeJsProjectPath + "/" + mainFileName },
+              nodeJsProjectPath + ":" + builtinModulesPath, redirectOutputToLogcat);
         }
       }).start();
     }
@@ -193,11 +182,8 @@ public class RNNodeJsMobileModule extends ReactContextBaseJavaModule implements 
   }
 
   // Sends an event through the App Event Emitter.
-  private void sendEvent(String eventName,
-                         @Nullable WritableMap params) {
-    reactContext
-      .getJSModule(RCTNativeAppEventEmitter.class)
-      .emit(eventName, params);
+  private void sendEvent(String eventName, @Nullable WritableMap params) {
+    reactContext.getJSModule(RCTNativeAppEventEmitter.class).emit(eventName, params);
   }
 
   public static void sendMessageToApplication(String channelName, String msg) {
@@ -226,12 +212,12 @@ public class RNNodeJsMobileModule extends ReactContextBaseJavaModule implements 
 
   @Override
   public void onHostDestroy() {
-      // Activity `onDestroy`
+    // Activity `onDestroy`
   }
 
   public static void handleAppChannelMessage(String msg) {
     if (msg.equals("ready-for-app-events")) {
-      nodeIsReadyForAppEvents=true;
+      nodeIsReadyForAppEvents = true;
     }
   }
 
@@ -257,7 +243,8 @@ public class RNNodeJsMobileModule extends ReactContextBaseJavaModule implements 
 
   public native String getCurrentABIName();
 
-  public native Integer startNodeWithArguments(String[] arguments, String modulesPath, boolean option_redirectOutputToLogcat);
+  public native Integer startNodeWithArguments(String[] arguments, String modulesPath,
+      boolean option_redirectOutputToLogcat);
 
   public native void sendMessageToNodeChannel(String channelName, String msg);
 
@@ -278,7 +265,8 @@ public class RNNodeJsMobileModule extends ReactContextBaseJavaModule implements 
     this.previousLastUpdateTime = prefs.getLong(LAST_UPDATED_TIME, 0);
 
     try {
-      PackageInfo packageInfo = this.reactContext.getPackageManager().getPackageInfo(this.reactContext.getPackageName(), 0);
+      PackageInfo packageInfo = this.reactContext.getPackageManager().getPackageInfo(this.reactContext.getPackageName(),
+          0);
       this.lastUpdateTime = packageInfo.lastUpdateTime;
     } catch (PackageManager.NameNotFoundException e) {
       e.printStackTrace();
@@ -341,7 +329,6 @@ public class RNNodeJsMobileModule extends ReactContextBaseJavaModule implements 
     return true;
   }
 
-
   private void copyNodeJsAssets() throws IOException {
     assetManager = getReactApplicationContext().getAssets();
 
@@ -389,7 +376,7 @@ public class RNNodeJsMobileModule extends ReactContextBaseJavaModule implements 
     Log.d(TAG, "Node assets copy completed successfully");
   }
 
-  private ArrayList<String> readFileFromAssets(String filename){
+  private ArrayList<String> readFileFromAssets(String filename) {
     ArrayList lines = new ArrayList();
     try {
       BufferedReader reader = new BufferedReader(new InputStreamReader(assetManager.open(filename)));
